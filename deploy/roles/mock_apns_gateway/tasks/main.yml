@@ -1,0 +1,32 @@
+---
+- name: Install dependencies for Ansible and vagrant
+  apt: pkg={{ item }} update_cache=yes
+  with_items:
+    - git
+
+- name: Install all the gems
+  command: /usr/local/bin/bundle install chdir={{ mock_apns_gateway.dir }}
+  sudo_user: vagrant
+
+- name: Link APNS key pem file
+  file: src={{ mock_apns_gateway.apn_key_path }} dest={{ mock_apns_gateway.dir }}/certs/key.pem state=link
+
+- name: Link APNS cert pem file
+  file: src={{ mock_apns_gateway.apn_cert_path }} dest={{ mock_apns_gateway.dir }}/certs/cert.pem state=link
+
+
+- name: generate init scripts
+  sudo: true
+  template: >
+    src=mock_apns_gateway_upstart.tmpl
+    dest=/etc/init/{{ mock_apns_gateway.service }}.conf
+    owner=root
+    group=root
+    mode=0755
+
+- name: start mock apns gateway server
+  sudo: true
+  service: >
+    name={{ mock_apns_gateway.service }}
+    enabled=yes
+    state=restarted

@@ -1,0 +1,19 @@
+---
+- name: Vagrant Box Playbook
+  hosts: localhost
+  gather_facts: true
+  user: vagrant
+  sudo: true
+
+  vars_files:
+    - group_vars/vagrant.yml
+
+  # NOTE: Make sure changes to these roles are reflected in the packer
+  # template file's `role_paths`. Not DRY.
+  roles:
+    - common
+    - bcen01.nodejs
+    - ruby
+    - bennojoy.mysql
+    - bennojoy.redis
+    - ansible-elasticsearch

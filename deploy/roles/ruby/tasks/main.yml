@@ -1,0 +1,18 @@
+- name: Add brightbox ruby ppa
+  apt_repository: repo='ppa:brightbox/ruby-ng' update_cache=true
+
+- name: Install ruby
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - ruby2.1
+    - ruby2.1-dev
+    - ruby-switch
+
+- name: Change default ruby to 2.1
+  shell: ruby-switch --set ruby2.1
+
+# TODO: This is garbage, figure out how to use the gem module and ensure it uses the correct ruby.
+- name: Install bundler
+  shell: /usr/bin/gem2.1 install bundler
+
+# TODO: This play should actually ensure that all rubies other than 2.0 are gone before we do anything.

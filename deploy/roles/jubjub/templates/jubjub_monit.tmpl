@@ -1,0 +1,68 @@
+
+
+set daemon 30
+
+set logfile /var/log/monit.log
+
+set idfile /var/lib/monit/id
+
+set statefile /var/lib/monit/state
+
+set mailserver {{ monit_mail_server }}
+  username "{{ monit_mail_user }}", password "{{ monit_mail_password }}"
+
+set alert {{ lua_alert_email }}
+
+set httpd port 2812 and
+  use address localhost  # only accept connection from localhost
+  allow localhost        # allow localhost to connect to the server and
+  allow admin:monit      # require user 'admin' with password 'monit'
+  allow @root
+  allow @users readonly
+
+check system localhost
+  if loadavg (1 min) > 2 then alert
+  if loadavg (5 min) > 1 then alert
+  if memory usage > 80% then alert
+  if swap usage > 10% then alert
+  if cpu usage (system) > 50% then alert
+  if cpu usage (wait) > 20% then alert
+
+check file node_bin with path {{ nodejs_app.node_path }}
+  if failed checksum then unmonitor
+  if failed permission 755 then unmonitor
+  if failed uid root then unmonitor
+  if failed gid root then unmonitor
+  alert {{ lua_alert_email }} on {
+    checksum, permission, uid, gid
+  }
+  group jubjub
+
+check file jubjub_main with path {{ nodejs_app.dir }}/{{ nodejs_app.service
+}}.js
+  if failed checksum then unmonitor
+  if failed permission 755 then unmonitor
+  if failed uid root then unmonitor
+  if failed gid root then unmonitor
+  alert {{ lua_alert_email }} on {
+    checksum, permission, uid, gid
+  }
+  group jubjub
+
+check process {{ nodejs_app.service }} with pidfile {{ nodejs_app.pid_file }}
+  start program   = "/sbin/start {{ nodejs_app.service }}"
+  stop program    = "/sbin/stop {{ nodejs_app.service }}"
+  if cpu > 60% for 2 cycles then alert
+  if cpu > 80% for 5 cycles then restart
+  if loadavg (5 min) > 1.6 for 6 cycles then alert
+  if totalmem > 1200.0 MB for 12 cycles then alert
+  if totalmem > 1600.0 MB for 6 cycles then restart
+  if failed host localhost port {{ nodejs_app.port }} protocol http
+    and request "/index.html"
+    then restart
+  if 8 restarts within 10 cycles then timeout
+  depends on node_bin
+  depends on jubjub_main
+  group jubjub
+
+

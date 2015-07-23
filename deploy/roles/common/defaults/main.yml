@@ -1,0 +1,6 @@
+---
+syslog:
+  incoming_udp: 513
+  incoming_tcp: 6983
+  remote_host: www.awesome-lua-log-server.net
+  remote_port: 16384

@@ -1,0 +1,13 @@
+---
+nodejs_app:
+  autostart: true
+  service: jubjub
+  node_path: /usr/bin/node
+  user: vagrant
+  dir: /opt/jubjub
+  logdir: /opt/jubjub/log
+  log_file: /var/log/jubjub.log
+  pid_file: /var/run/jubjub.pid
+  port: 3000
+  env:
+    NODE_ENV: development

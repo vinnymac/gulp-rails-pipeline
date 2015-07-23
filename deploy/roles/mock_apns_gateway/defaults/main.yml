@@ -1,0 +1,10 @@
+---
+mock_apns_gateway:
+  service: mock_apns_gateway
+  ruby_path: /usr/bin/ruby
+  dir: /opt/em-apn
+  script_path: ./script/server
+  log_file: /var/log/mock_apns_gateway.log
+  pid_file: /var/run/mock_apns_gateway.pid
+  apn_key_path: /opt/luawebapp/config/certs/me.lua.staging.development-key-noenc.pem
+  apn_cert_path: /opt/luawebapp/config/certs/me.lua.staging.development-cert.pem

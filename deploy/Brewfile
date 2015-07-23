@@ -1,0 +1,3 @@
+brew install ansible
+brew unlink ansible
+brew link ansible

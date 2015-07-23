@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  author: "Bocai Cen"
+  description: Node hotness
+  company: ~
+  license: MIT
+  min_ansible_version: 1.4
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - trusty
+        - precise
+        - quantal
+
+dependencies: []

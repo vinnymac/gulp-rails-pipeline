@@ -1,0 +1,56 @@
+---
+
+- name: Install gem build dependencies
+  apt: name={{ item }} state=latest
+  with_items:
+    - libmysqlclient-dev
+    - libmagic-dev
+    - mysql-client
+    - build-essential
+    - zlib1g-dev
+    - libssl-dev
+    - imagemagick
+
+- name: Get system gem list
+  command: sudo gem list
+  register: gem_list
+  sudo_user: "{{ ansible_ssh_user }}"
+
+# Not using the gem module bc it fails to install the binaries
+- name: Install system gems
+  command: sudo gem install {{ item.name }} --version '{{ item.version }}' --no-ri --no-rdoc
+  with_items:
+    - name: bundler
+      version: 1.10.5
+    - name: json
+      version: 1.8.3
+    - name: god
+      version: 0.13.6
+    - name: rack
+      version: 1.6.4
+    - name: tlsmail
+      version: 0.0.1
+    # Needs to be before unicorn
+    - name: raindrops
+      version: 0.13.0
+    - name: unicorn
+      version: 4.8.3
+  sudo_user: "{{ ansible_ssh_user }}"
+  when: "'{{ item.name }} ({{ item.version }})' not in gem_list.stdout"
+
+- name: Create release directories
+  file: path=/var/www/{{ item }} state=directory mode=775
+        owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
+  with_items:
+    - releases
+    - shared
+    - shared/log
+    - shared/vendor/bundle
+
+
+- name: Upload deploy setup script
+  copy: src=deploy-setup.sh dest=/tmp/deploy-setup.sh
+        mode=644 owner=root group=root
+
+- name: Run deploy setup script
+  script: /tmp/deploy-setup.sh

@@ -1,0 +1,81 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:             jubjub
+# Required-Start:       $syslog $remote_fs
+# Required-Stop:        $syslog $remote_fs
+# Should-Start:         $local_fs
+# Should-Stop:          $local_fs
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    jubjub
+# Description:          jubjub
+### END INIT INFO
+
+NODE_ENV='{{ nodejs_app.env }}'
+NODE_APP='{{ nodejs_app.service }}'
+APP_DIR='{{ nodejs_app.dir }}';
+PID_FILE=$APP_DIR/pid/$NODE_APP.pid
+LOG_FILE=/var/log/$NODE_APP.log
+CONFIG_DIR=$APP_DIR/config
+PORT={{ nodejs_app.port }}
+NODE_EXEC=`which node`
+
+start_app (){
+    if [ -f $PID_FILE ]
+    then
+        echo "$PID_FILE exists, process is already running or crashed"
+    else
+        echo "Starting {{ nodejs_app.service}}..."
+        PORT=$PORT NODE_ENV=$NODE_ENV NODE_CONFIG_DIR=$CONFIG_DIR $NODE_EXEC $APP_DIR/$NODE_APP  1>$LOG_FILE 2>&1 &
+        echo $! > $PID_FILE;
+    fi
+}
+
+stop_app (){
+    if [ ! -f $PID_FILE ]
+    then
+        echo "$PID_FILE does not exist, process is not running"
+    else
+        echo "Stopping $APP_DIR/$NODE_APP ..."
+        echo "Killing `cat $PID_FILE`"
+        kill `cat $PID_FILE`;
+        rm -f $PID_FILE;
+        echo "Node stopped"
+    fi
+}
+
+case "$1" in
+    start)
+        start_app
+    ;;
+
+    stop)
+        stop_app
+    ;;
+
+    restart)
+        stop_app
+        start_app
+    ;;
+
+    status)
+        if [ -f $PID_FILE ]
+        then
+            PID=`cat $PID_FILE`
+            if [ -z "`ps -ef | grep $PID | grep -v grep`" ]
+            then
+                echo "{{ nodejs_app.service }} stopped but pid file exists"
+            else
+                echo "{{ nodejs_app.service }} running with pid $PID"
+
+            fi
+        else
+            echo "{{ nodejs_app.service }} app stopped"
+        fi
+    ;;
+
+    *)
+        echo "Usage: /etc/init.d/{{nodejs_app.service }} {start|stop|restart|status}"
+    ;;
+esac
+

@@ -1,0 +1,13 @@
+---
+
+- name: Install sidekiq upstart script
+  copy: src=upstart-sidekiq.conf dest=/etc/init/sidekiq.conf
+        mode=644 owner=root group=root
+
+- name: Install sidekiq-manager upstart script
+  copy: src=upstart-sidekiq-manager.conf dest=/etc/init/sidekiq-manager.conf
+        mode=644 owner=root group=root
+
+- name: Install sidekiq configuration
+  copy: src=sidekiq.conf dest=/etc/sidekiq.conf
+        mode=644 owner=root group=root

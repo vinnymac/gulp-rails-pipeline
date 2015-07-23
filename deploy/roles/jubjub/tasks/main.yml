@@ -1,0 +1,49 @@
+---
+
+- name: npm install
+  command: >
+    npm install
+    chdir={{ nodejs_app.dir }}
+  changed_when: false
+
+- name: generate init scripts
+  sudo: true
+  template: >
+    src=jubjub_upstart.tmpl
+    dest=/etc/init/{{ nodejs_app.service }}.conf
+    owner=root
+    group=root
+    mode=0755
+#  notify: restart {{ nodejs_app.service }}
+
+- name: generate monit config
+  sudo: true
+  template: >
+    src=jubjub_monit.tmpl
+    dest=/etc/monit/monitrc
+    owner=root
+    group=root
+    mode=0600
+
+- name: add rsyslog config
+  sudo: true
+  template: >
+    src=jubjub_rsyslog.tmpl
+    dest=/etc/rsyslog.d/jubjub.conf
+    owner=root
+    group=root
+    mode=0644
+
+- name: start jubjub server
+  sudo: true
+  service: >
+    name={{ nodejs_app.service }}
+    enabled=yes
+    state=restarted
+
+- name: restart monit
+  sudo: true
+  service: >
+    name=monit
+    enabled=yes
+    state=restarted

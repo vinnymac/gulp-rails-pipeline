@@ -1,0 +1,18 @@
+---
+- hosts: vagrant
+  vars_files:
+    - group_vars/vagrant.yml
+
+  roles:
+    - common
+    - bcen01.nodejs
+    - ruby
+    - bennojoy.mysql
+    - bennojoy.redis
+    # - role-mailcatcher
+    # - ansible-elasticsearch
+    # - ansible-role-elasticsearch-curator
+    # - luaapp
+    - gulp-rails
+    # - jubjub
+    # - mock_apns_gateway

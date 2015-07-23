@@ -1,0 +1,37 @@
+---
+#Data Dog
+datadog_environment: "staging"
+
+#Elastic Search
+elasticsearch_cluster_name: elasticsearch-staging
+elasticsearch_aws_version: 2.4.0
+elasticsearch_node_max_local_storage_nodes: 1
+elasticsearch_plugin_aws_ec2_ping_timeout: 5m
+elasticsearch_plugin_aws_ec2_region: us-east-1
+elasticsearch_plugin_aws_ec2_groups: elasticsearch-staging
+elasticsearch_plugin_aws_version: 2.4.0
+elasticsearch_plugins:
+  # - { name: 'elasticsearch/elasticsearch-mapper-attachments/2.0.0' }
+  - { name: 'royrusso/elasticsearch-HQ/latest'}
+  - { name: 'elasticsearch/marvel/latest'}
+
+appneta_access_key: 6c13e569-e6a6-46ba-b9f3-150a09f870a6
+
+# node.js & monit configuration
+lua_alert_email: 'services@getlua.com'
+monit_mail_server: 'getlua.com'
+monit_mail_user: 'services'
+monit_mail_password: 'services'
+
+nodejs_app:
+  autostart: true
+  service: jubjub
+  node_path: /usr/bin/node
+  user: ubuntu
+  dir: /home/ubuntu/jubjub
+  logdir: /home/ubuntu/jubjub/log
+  log_file: /var/log/jubjub.log
+  pid_file: /var/run/jubjub.pid
+  port: 3000
+  env:
+    NODE_ENV: staging

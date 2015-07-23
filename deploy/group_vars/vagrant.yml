@@ -1,0 +1,29 @@
+---
+mysql_bind_address: "0.0.0.0"
+mysql_root_db_pass: ""
+mysql_db: [{name: lua_development}]
+mysql_users:
+  - { name: lua, pass: lua, priv: "*.*:ALL"}
+  - { name: lua, pass: lua, host: 10.10.10.1, priv: "*.*:ALL"}
+webapp_name: "luawebapp"
+rails_root: "/opt/luawebapp"
+rails_env: "development"
+sidekiq_queue_name: "sidekiq1"
+sidekiq_threads: 2
+sidekiq_process_index: 0
+sidekiq_queue_length: "default"
+lua_alert_email: 'services@getlua.com'
+monit_mail_server: 'getlua.com'
+monit_mail_user: 'services'
+monit_mail_password: 'services'
+
+#Elastic Search
+elasticsearch_data_dir: /usr/share/elasticsearch/data
+elasticsearch_heap_size: 256m
+elasticsearch_thread_pools:
+  - "threadpool.bulk.type: fixed"
+  - "threadpool.bulk.size: 50"
+  - "threadpool.bulk.queue_size: 1000"
+elasticsearch_plugins:
+  - { name: 'royrusso/elasticsearch-HQ/latest'}
+  - { name: 'elasticsearch/marvel/latest'}

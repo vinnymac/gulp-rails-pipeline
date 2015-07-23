@@ -1,0 +1,22 @@
+---
+- name: Update all packages
+  apt: upgrade=yes update_cache=yes
+
+- name: Format encrypted volume
+  filesystem: fstype=ext4 dev=/dev/xvde
+
+- name: Mount encrypted volume to /var/log
+  mount: name=/var/log src=/dev/xvde
+         fstype=ext4 state=mounted
+
+- name: Create repo directory
+  file: path={{ repo_path }} state=directory mode=775
+        owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
+  when: repo_url is defined and repo_path is defined
+
+- name: Clone repo
+  git: repo={{ repo_url }} dest={{ repo_path }}
+       bare={{ repo_bare }}
+       accept_hostkey=yes # TODO: Add github hostkeys to instance config
+  sudo_user: "{{ ansible_ssh_user }}"
+  when: repo_url is defined and repo_path is defined

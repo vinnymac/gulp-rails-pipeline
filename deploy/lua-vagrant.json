@@ -1,0 +1,28 @@
+{
+  "name": "getlua/webapp",
+  "description": "Mostly pre-provisioned webapp box built on Ubuntu 14.04.2 64-bit.",
+  "versions": [
+    {
+      "version": "15.6.10",
+      "providers": [
+        {
+          "name": "virtualbox",
+          "url": "https://s3.amazonaws.com/lua-vagrant/ubuntu-14.04_15.6.10.box",
+          "checksum_type": "sha1",
+          "checksum": "7b46b801105207ff426127203c2fb41ada777444"
+        }
+      ]
+    },
+    {
+      "version": "15.6.25",
+      "providers": [
+        {
+          "name": "virtualbox",
+          "url": "https://s3.amazonaws.com/lua-vagrant/ubuntu-14.04_15.6.25.box",
+          "checksum_type": "sha1",
+          "checksum": "b9145dcda1ebc7f55e7c18b6485563172aa58b05"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+---
+- name: Worker AMI Playbook
+  hosts: localhost
+  gather_facts: true
+  user: ubuntu
+  sudo: true
+
+  vars_files:
+    - group_vars/{{ deploy_env }}.yml
+    - group_vars/worker.yml
+
+  roles:
+    - common
+    - ruby
+    - bennojoy.ntp
+    - ami-setup
+    - ansible-datadog
+    - web-worker-common
+    - worker

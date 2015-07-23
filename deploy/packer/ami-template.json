@@ -1,0 +1,211 @@
+{
+  "variables": {
+    "deploy_env": null,
+    "aws_access_key": null,
+    "aws_secret_key": null,
+    "elasticsearch_deploy_key": null,
+    "jubjub_deploy_key": null,
+    "web_deploy_key": null,
+    "worker_deploy_key": null
+  },
+  "builders": [{
+    "name": "elasticsearch",
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "us-east-1",
+    "source_ami": "ami-9eaa1cf6",
+    "launch_block_device_mappings": [
+      {
+        "device_name": "/dev/sde",
+        "encrypted": true,
+        "volume_size": 16,
+        "volume_type": "gp2"
+      }
+    ],
+    "ami_block_device_mappings": [
+      {
+        "device_name": "/dev/sde",
+        "encrypted": true,
+        "volume_size": 16,
+        "volume_type": "gp2"
+      }
+    ],
+    "instance_type": "m3.medium",
+    "ssh_username": "ubuntu",
+    "ami_name": "elasticsearch.{{user `deploy_env`}}.{{isotime \"2006-01-02T15:04:05MST\" | clean_ami_name}}"
+  }, {
+    "name": "jubjub",
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "us-east-1",
+    "source_ami": "ami-9eaa1cf6",
+    "launch_block_device_mappings": [
+      {
+        "device_name": "/dev/sde",
+        "encrypted": true,
+        "volume_size": 16,
+        "volume_type": "gp2"
+      }
+    ],
+    "ami_block_device_mappings": [
+      {
+        "device_name": "/dev/sde",
+        "encrypted": true,
+        "volume_size": 16,
+        "volume_type": "gp2"
+      }
+    ],
+    "instance_type": "m3.medium",
+    "ssh_username": "ubuntu",
+    "ami_name": "jubjub.{{user `deploy_env`}}.{{isotime \"2006-01-02T15:04:05MST\" | clean_ami_name}}"
+  }, {
+    "name": "web",
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "us-east-1",
+    "source_ami": "ami-9eaa1cf6",
+    "launch_block_device_mappings": [
+      {
+        "device_name": "/dev/sde",
+        "encrypted": true,
+        "volume_size": 16,
+        "volume_type": "gp2"
+      }
+    ],
+    "ami_block_device_mappings": [
+      {
+        "device_name": "/dev/sde",
+        "encrypted": true,
+        "volume_size": 16,
+        "volume_type": "gp2"
+      }
+    ],
+    "instance_type": "m3.medium",
+    "ssh_username": "ubuntu",
+    "ami_name": "web.{{user `deploy_env`}}.{{isotime \"2006-01-02T15:04:05MST\" | clean_ami_name}}"
+  }, {
+    "name": "worker",
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "us-east-1",
+    "source_ami": "ami-9eaa1cf6",
+    "launch_block_device_mappings": [
+      {
+        "device_name": "/dev/sde",
+        "encrypted": true,
+        "volume_size": 16,
+        "volume_type": "gp2"
+      }
+    ],
+    "ami_block_device_mappings": [
+      {
+        "device_name": "/dev/sde",
+        "encrypted": true,
+        "volume_size": 16,
+        "volume_type": "gp2"
+      }
+    ],
+    "instance_type": "m3.medium",
+    "ssh_username": "ubuntu",
+    "ami_name": "worker.{{user `deploy_env`}}.{{isotime \"2006-01-02T15:04:05MST\" | clean_ami_name}}"
+  }],
+  "provisioners": [{
+    "type": "shell",
+    "inline": [
+      "sleep 30",
+      "sudo add-apt-repository -y ppa:ansible/ansible",
+      "sudo apt-get update -y",
+      "sudo apt-get install -y ansible"
+    ]
+  }, {
+    "only": ["jubjub"],
+    "type": "file",
+    "source": "{{user `jubjub_deploy_key`}}",
+    "destination": "/home/ubuntu/.ssh/id_rsa"
+  }, {
+    "only": ["web"],
+    "type": "file",
+    "source": "{{user `web_deploy_key`}}",
+    "destination": "/home/ubuntu/.ssh/id_rsa"
+  }, {
+    "only": ["worker"],
+    "type": "file",
+    "source": "{{user `worker_deploy_key`}}",
+    "destination": "/home/ubuntu/.ssh/id_rsa"
+  }, {
+    "only": ["jubjub", "web", "worker"],
+    "type": "shell",
+    "inline": [
+      "chmod 600 /home/ubuntu/.ssh/id_rsa"
+    ]
+  }, {
+    "only": ["elasticsearch"],
+    "type": "ansible-local",
+    "playbook_file": "./ami-playbooks/elasticsearch.yml",
+    "extra_arguments": [
+      "-e deploy_env={{user `deploy_env`}}"
+    ],
+    "group_vars": "../group_vars",
+    "role_paths": [
+      "../roles/common",
+      "../roles/bennojoy.ntp",
+      "../roles/ami-setup",
+      "../roles/ansible-datadog",
+      "../roles/ansible-elasticsearch",
+      "../roles/ansible-role-elasticsearch-curator"
+    ]
+  }, {
+    "only": ["jubjub"],
+    "type": "ansible-local",
+    "playbook_file": "./ami-playbooks/jubjub.yml",
+    "extra_arguments": [
+      "-e deploy_env={{user `deploy_env`}}"
+    ],
+    "group_vars": "../group_vars",
+    "role_paths": [
+      "../roles/common",
+      "../roles/bennojoy.ntp",
+      "../roles/bcen01.nodejs",
+      "../roles/ami-setup",
+      "../roles/jubjub"
+    ]
+  }, {
+    "only": ["web"],
+    "type": "ansible-local",
+    "playbook_file": "./ami-playbooks/web.yml",
+    "extra_arguments": [
+      "-e deploy_env={{user `deploy_env`}}"
+    ],
+    "group_vars": "../group_vars",
+    "role_paths": [
+      "../roles/common",
+      "../roles/ruby",
+      "../roles/bennojoy.ntp",
+      "../roles/ami-setup",
+      "../roles/ansible-datadog",
+      "../roles/web-worker-common",
+      "../roles/web"
+    ]
+  }, {
+    "only": ["worker"],
+    "type": "ansible-local",
+    "playbook_file": "./ami-playbooks/worker.yml",
+    "extra_arguments": [
+      "-e deploy_env={{user `deploy_env`}}"
+    ],
+    "group_vars": "../group_vars",
+    "role_paths": [
+      "../roles/common",
+      "../roles/ruby",
+      "../roles/bennojoy.ntp",
+      "../roles/ami-setup",
+      "../roles/ansible-datadog",
+      "../roles/web-worker-common",
+      "../roles/worker"
+    ]
+  }]
+}

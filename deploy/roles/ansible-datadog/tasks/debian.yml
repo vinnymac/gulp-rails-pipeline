@@ -1,0 +1,25 @@
+---
+
+- apt: update_cache=yes
+
+- apt_key: id=C7A7DA52 keyserver=keyserver.ubuntu.com state=present
+
+- apt_repository: repo='deb http://apt.datadoghq.com/ stable main' state=present update_cache=yes
+
+- apt: name=datadog-agent state=latest
+
+- apt: name=python-psutil state=latest
+
+- template: src=datadog.conf.j2 dest=/etc/dd-agent/datadog.conf
+  notify: restart datadog
+
+# Check whether we have elastic search installed
+- shell: if [ -e /usr/share/elasticsearch ]; then echo yes; else echo no; fi;
+  register: elasticsearch_installed
+  always_run: True
+
+- template: src=elastic.yaml.j2 dest=/etc/dd-agent/conf.d/elastic.yaml
+  notify: restart datadog
+  when: elasticsearch_installed.stdout == 'yes'
+
+- service: name=datadog-agent state=started

@@ -1,0 +1,17 @@
+---
+- name: Jubjub AMI Playbook
+  hosts: localhost
+  gather_facts: true
+  user: ubuntu
+  sudo: true
+
+  vars_files:
+    - group_vars/{{ deploy_env }}.yml
+    - group_vars/jubjub.yml
+
+  roles:
+    - common
+    - bennojoy.ntp
+    - bcen01.nodejs
+    - ami-setup
+    - jubjub

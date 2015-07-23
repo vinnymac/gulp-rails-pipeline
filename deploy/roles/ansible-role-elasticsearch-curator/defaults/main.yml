@@ -1,0 +1,14 @@
+---
+elasticsearch_curator_cron_jobs:
+  - {
+    name: "Delete indices older than 7 days (daily).",
+    job: "curator delete --older-than 7",
+    minute: 0,
+    hour: 1
+  }
+  - {
+    name: "Close indices older than 2 days (daily).",
+    job: "curator close --older-than 2",
+    minute: 30,
+    hour: 1
+  }

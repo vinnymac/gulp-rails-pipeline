@@ -1,0 +1,31 @@
+#!upstart
+description "Autostart Mock APNS Gateway"
+
+start on started filesystem networking
+stop on runlevel [016]
+
+respawn
+# If we restart more than X times in Y seconds, give up.
+respawn limit 10 60
+
+env RUBY_PATH="{{ mock_apns_gateway.ruby_path }}"
+env APP_DIR="{{ mock_apns_gateway.dir }}"
+env SCRIPT="{{ mock_apns_gateway.script_path }}"
+env LOG="{{ mock_apns_gateway.log_file }}"
+env PIDFILE="{{ mock_apns_gateway.pid_file }}"
+
+script
+    . /etc/environment
+    # Put a message in the logs with a timestamp, indicating that we're
+    # starting the app
+    echo "*** `date -u +%Y-%m-%dT%T.%3NZ`: Mock APNS Gateway started by upstart ***" >> $LOG
+    echo $$ >> $PIDFILE
+    chdir $APP_DIR
+    echo "$RUBY_PATH $SCRIPT >> $LOG"
+    exec $RUBY_PATH $SCRIPT >> $LOG
+end script
+
+post-stop script
+    echo "*** `date -u +%Y-%m-%dT%T.%3NZ`: Mock APNS Gateway stopped by upstart ***" >> $LOG
+    rm -f $PIDFILE
+end script

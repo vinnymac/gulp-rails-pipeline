@@ -1,0 +1,3 @@
+repo_url: git@github.com:getlua/webapp.git
+repo_path: /var/www/repo
+repo_bare: true

@@ -1,0 +1,43 @@
+---
+
+# Install nginx with tracelytics
+- name: Upload AppNeta install script
+  copy: src=install_appneta.sh dest=/tmp/install_appneta.sh
+        mode=644 owner=root group=root
+
+- name: Run AppNeta install script
+  script: /tmp/install_appneta.sh {{ appneta_access_key }}
+          creates=/etc/apt/sources.list.d/tracelytics.list
+
+- name: Install nginx
+  apt: name=nginx state=present
+
+- name: Add nginx group
+  group: name=nginx state=present
+
+- name: Add nginx user
+  user: name=nginx state=present
+        group=nginx groups="nginx,{{ ansible_ssh_user }}"
+
+- name: Start nginx service
+  service: name=nginx state=started enabled=yes
+
+
+# Configure webapp
+- name: Create application log directory
+  file: path=/var/log/webapp/ state=directory mode=775
+        owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
+
+- name: Symlink webapp logrotate config
+  file: src=/var/www/current/config/logrotate.conf
+        dest=/etc/logrotate.d/webapp mode=644
+        state=link
+
+- name: Install web upstart script
+  copy: src=upstart-web.conf dest=/etc/init/web.conf
+        mode=644 owner=root group=root
+
+- name: Symlink nginx configuration
+  file: src=/var/www/current/config/nginx.conf
+        dest=/etc/nginx/nginx.conf mode=644
+        state=link force=yes

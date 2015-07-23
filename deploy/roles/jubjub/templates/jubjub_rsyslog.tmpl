@@ -1,0 +1,8 @@
+# rsyslogd configuration for jubjub log file
+$InputFileName {{ nodejs_app.log_file }}
+$InputFileTag jubjub-logs
+$InputFileStateFile jubjub-state-file
+$InputFileFacility local3
+$InputRunFileMonitor
+
+

@@ -1,0 +1,62 @@
+- name: Install native gem building dependencies
+  apt: pkg={{ item }} state=latest update_cache=yes
+  with_items:
+    - libxslt1-dev
+    - libxml2-dev
+    - build-essential
+    - libmagic-dev
+    - libsqlite3-dev
+
+- name: Install mysql ruby dependencies
+  apt: pkg={{ item }} state=latest update_cache=yes
+  with_items:
+    - libmysqlclient-dev
+    - mysql-client
+
+- name: Install vim
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - vim
+    - imagemagick
+
+- name: Install all the gems from local gem cache
+  command: /usr/local/bin/bundle install --local --path=vendor/bundle chdir={{ rails_root }}
+  sudo_user: vagrant
+
+- name: Install custom bashrc
+  template: src=bashrc dest=/home/vagrant/.bashrc mode=644
+
+- name: Create the init script for the webapp
+  template: src=etc_init_d_luaapp.j2 dest=/etc/init.d/luawebapp force=yes mode=755
+
+- name: Create the init script for sidekiq
+  template: src=etc_init_d_sidekiq.j2 dest=/etc/init.d/sidekiq force=yes mode=755
+
+- name: Create the conf directory for unicorn
+  file: path=/etc/unicorn state=directory
+
+- name: Create the unicorn init configuration file
+  template: src=etc_unicorn_luawebapp_conf.j2 dest=/etc/unicorn/luawebapp.conf
+
+- name: Create the log directory
+  file: path={{ rails_root }}/log state=directory
+
+- name: Run the db:reset task
+  command: /usr/local/bin/bundle exec rake db:reset seed=true chdir={{ rails_root }}
+
+- name: Start the services
+  service: name={{ item }} state=started enabled=yes
+  with_items:
+    - luawebapp
+    - sidekiq
+  sudo: True
+
+- name: Run the test:prepare task
+  command: /usr/local/bin/bundle exec rake db:test:prepare chdir={{ rails_root }}
+
+- name: Update inotify limit (required for running guard)
+  command: echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+  sudo_user: vagrant
+
+- name: Add web upstart script
+  template: src=web.conf dest=/etc/init/web.conf owner=root group=root mode=644
